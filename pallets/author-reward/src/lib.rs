@@ -27,6 +27,18 @@ pub mod pallet {
 		type InitialBlockReward: Get<u128>;
 	}
 
+	/// This will let us configure the transaction payment pallet which will call on_unbalanceds when fees are collected
+	/// from the transaction. The goal is to send the fees to the author of the block in which transaction is included.
+	/// 
+	/// In the runtime we can do this:
+	/// ```
+	/// impl pallet_transaction_payment::Config for Runtime {
+	///   type OnChargeTransaction = CurrencyAdapter<Balances, AuthorReward>;
+	///   ...
+	/// }
+	/// ```
+	/// 
+	/// Basically the CurrencyAdapter has the `correct_and_deposit_fee` method which will call our implementation of `on_unbalanceds`
 	impl <T: Config> OnUnbalanced<NegativeImbalance<T>> for Pallet<T> {
 		fn on_nonzero_unbalanced(amount: NegativeImbalance<T>) {
 			let digest = <frame_system::Pallet<T>>::digest();
