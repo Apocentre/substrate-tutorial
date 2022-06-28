@@ -1,6 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub mod types;
+pub mod operations;
 
 pub use pallet::*;
 use crate::types::kitty::*;
@@ -12,7 +13,7 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 	use frame_support::traits::{Currency, Randomness};
 	
-	type BalanceOf<T> = <<T as crate::pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	pub type BalanceOf<T> = <<T as crate::pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 	
 	/// The state of our Runtime
 	
@@ -64,11 +65,17 @@ pub mod pallet {
 	// Your Pallet's events.
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config> {}
+	pub enum Event<T: Config> {
+		/// A new kitty was successfully created.
+		Created {kitty: [u8; 16], owner: T::AccountId}
+	}
 
-	// Your Pallet's error messages.
 	#[pallet::error]
-	pub enum Error<T> {}
+	pub enum Error<T> {
+		TooManyOwned,
+		DuplicateKitty,
+		Overflow,
+	}
 
 	// Your Pallet's callable functions.
 	#[pallet::call]
