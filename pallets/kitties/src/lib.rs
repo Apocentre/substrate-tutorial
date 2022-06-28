@@ -66,15 +66,26 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// A new kitty was successfully created.
-		Created {kitty: [u8; 16], owner: T::AccountId}
+    /// A new kitty was successfully created.
+    Created {kitty: [u8; 16], owner: T::AccountId},
+    /// A kitty was successfully transferred.
+    Transferred {from: T::AccountId, to: T::AccountId, kitty: [u8; 16]},
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
-		TooManyOwned,
-		DuplicateKitty,
-		Overflow,
+    /// An account may only own `MaxKittiesOwned` kitties.
+    TooManyOwned,
+    /// This kitty already exists!
+    DuplicateKitty,
+    /// An overflow has occurred!
+    Overflow,
+    /// This kitty does not exist!
+    NoKitty,
+    /// You are not the owner of this kitty.
+    NotOwner,
+    /// Trying to transfer or buy a kitty from oneself.
+    TransferToSelf,
 	}
 
 	// Your Pallet's callable functions.

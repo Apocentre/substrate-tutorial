@@ -1,8 +1,11 @@
 use crate::types::kitty::*;
 use frame_support::traits::Randomness;
 use frame_support::pallet_prelude::*;
+use crate::{
+  pallet::{Pallet, Config},
+};
 
-impl<T: crate::Config> crate::pallet::Pallet<T> {
+impl<T: Config> Pallet<T> {
   pub fn gen_dna() -> ([u8; 16], Gender) {
     // Create randomness
     let random = T::Randomness::random(&b"dna"[..]).0;

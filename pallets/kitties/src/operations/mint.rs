@@ -1,10 +1,10 @@
 use crate::{
   types::kitty::*,
-  pallet::{Kitties, KittiesOwned, TotalSupply, Error, Event, BalanceOf},
+  pallet::{Pallet, Config, Kitties, KittiesOwned, TotalSupply, Error, Event, BalanceOf},
 };
 use frame_support::pallet_prelude::*;
 
-impl<T: crate::Config> crate::pallet::Pallet<T> {
+impl<T: Config> Pallet<T> {
   pub fn mint(
     owner: &T::AccountId,
     dna: [u8; 16],
