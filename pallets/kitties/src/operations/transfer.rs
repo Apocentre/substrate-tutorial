@@ -4,13 +4,15 @@ use crate::{
 use frame_support::pallet_prelude::*;
 
 impl<T: Config> Pallet<T> {
-  pub fn transfer(
+  pub fn exec_transfer(
     kitty_id: [u8; 16],
+    origin: T::AccountId,
     to: T::AccountId,
   ) -> DispatchResult {
     let mut kitty = Kitties::<T>::get(&kitty_id).ok_or(Error::<T>::NoKitty)?;
     let from = kitty.owner;
-
+    
+    ensure!(origin == from, Error::<T>::NotOwner);
     ensure!(from != to, Error::<T>::TransferToSelf);
 
     let mut from_owned = KittiesOwned::<T>::get(&from);

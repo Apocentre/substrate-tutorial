@@ -102,6 +102,19 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+		#[pallet::weight(0)]
+		pub fn transfer(
+			origin: OriginFor<T>,
+			to: T::AccountId,
+			kitty_id: [u8; 16]
+		) -> DispatchResult {
+			let from = ensure_signed(origin)?;
+		
+			Self::exec_transfer(kitty_id, from, to)?;
+
+			Ok(())
+		}
 	}
 
 	// Your Pallet's internal functions.
