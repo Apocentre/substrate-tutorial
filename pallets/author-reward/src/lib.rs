@@ -50,6 +50,8 @@ pub mod pallet {
 		fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<T>>) {
 			if let Some(mut fees) = fees_then_tips.next() {
 				// Add the reward block into the fees. Total author rewards = block reward + fees + tips
+				// TODO: this will be read from the pallet's storage. It will start with the initial block reward
+				// but will reduce based on a specific schedule.
 				fees.subsume(T::InitialBlockReward::get());
 
 				let mut split = fees.ration(80, 20);
