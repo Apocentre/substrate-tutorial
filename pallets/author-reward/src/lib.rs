@@ -2,6 +2,8 @@
 
 pub use pallet::*;
 
+/// This pallet implements the OnUnbalanced trait which is used by the transaction payment pallet responsible for collection
+/// the transaction fees. It can be used in any Runtime where we want to reward the block authors.
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -19,12 +21,8 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Authorship: FindAuthor<Self::AccountId>;
-
 		type Balances: Currency<Self::AccountId>;
-
-		/// The starting block reward
-		#[pallet::constant]
-		type InitialBlockReward: Get<u128>;
+		type InitialBlockReward: Get<NegativeImbalance<Self>>;
 	}
 
 	/// This will let us configure the transaction payment pallet which will call on_unbalanceds when fees are collected
@@ -50,11 +48,14 @@ pub mod pallet {
 		}
 		
 		fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<T>>) {
-			if let Some(fees) = fees_then_tips.next() {
+			if let Some(mut fees) = fees_then_tips.next() {
+				// Add the reward block into the fees. Total author rewards = block reward + fees + tips
+				fees.subsume(T::InitialBlockReward::get());
+
 				let mut split = fees.ration(80, 20);
 				
 				if let Some(tips) = fees_then_tips.next() {
-					// for tips, if any, 80% to treasury, 20% to block author (though this can be anything)
+					// for tips, if any, 80% to treasury, 20% to block author
 					tips.ration_merge_into(80, 20, &mut split);
 				}
 				//Treasury::on_unbalanced(split.0);

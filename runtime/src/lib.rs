@@ -141,6 +141,8 @@ pub fn native_version() -> NativeVersion {
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 parameter_types! {
+	/// The initial block reward is 10. The blockchain uses 6 decimal points.
+	pub InitialBlockReward: pallet_balances::NegativeImbalance<Runtime> = pallet_balances::NegativeImbalance::new(10_000_000);
 	pub const BlockHashCount: BlockNumber = 2400;
 	pub const Version: RuntimeVersion = VERSION;
 	/// We allow for 2 seconds of compute with a 6 second average block time.
@@ -286,9 +288,7 @@ impl pallet_kitties::Config for Runtime {
 impl pallet_author_reward::Config for Runtime {
 	type Authorship = AuraAccountAdapter;
 	type Balances = Balances;
-	// Start with 10 NATIVE tokens per block
-	// We use 6 decimals
-	type InitialBlockReward = ConstU128<10_000_000>;
+	type InitialBlockReward = InitialBlockReward;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
