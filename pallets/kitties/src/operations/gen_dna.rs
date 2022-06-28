@@ -6,7 +6,7 @@ use crate::{
 };
 
 impl<T: Config> Pallet<T> {
-  pub fn gen_dna() -> ([u8; 16], Gender) {
+  pub fn gen_dna() -> (Dna, Gender) {
     // Create randomness
     let random = T::Randomness::random(&b"dna"[..]).0;
 

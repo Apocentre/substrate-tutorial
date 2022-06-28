@@ -7,9 +7,9 @@ use frame_support::pallet_prelude::*;
 impl<T: Config> Pallet<T> {
   pub fn mint(
     owner: &T::AccountId,
-    dna: [u8; 16],
+    dna: Dna,
     gender: Gender,
-  ) -> Result<[u8; 16], DispatchError> {
+  ) -> Result<Dna, DispatchError> {
     // create a new kitty
     ensure!(!Kitties::<T>::contains_key(&dna), Error::<T>::DuplicateKitty);
     

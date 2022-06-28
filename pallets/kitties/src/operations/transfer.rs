@@ -1,11 +1,12 @@
 use crate::{
+  types::kitty::*,
   pallet::{Config, Pallet, Kitties, KittiesOwned, Error, Event},
 };
 use frame_support::pallet_prelude::*;
 
 impl<T: Config> Pallet<T> {
   pub fn exec_transfer(
-    kitty_id: [u8; 16],
+    kitty_id: Dna,
     origin: T::AccountId,
     to: T::AccountId,
   ) -> DispatchResult {

@@ -23,7 +23,7 @@ pub mod pallet {
 
 	/// Maps the kitty struct to the kitty DNA.
 	#[pallet::storage]
-	pub(super) type Kitties<T: Config> = StorageMap<_, Twox64Concat, [u8; 16], Kitty<T::AccountId, BalanceOf<T>>>;
+	pub(super) type Kitties<T: Config> = StorageMap<_, Twox64Concat, Dna, Kitty<T::AccountId, BalanceOf<T>>>;
 
 	/// Track the kitties owned by each account.
 	#[pallet::storage]
@@ -31,7 +31,7 @@ pub mod pallet {
 		_,
 		Twox64Concat,
 		T::AccountId,
-		BoundedVec<[u8; 16], T::PersonalCap>,
+		BoundedVec<Dna, T::PersonalCap>,
 		ValueQuery,
 	>;
 
@@ -67,9 +67,11 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
     /// A new kitty was successfully created.
-    Created {kitty: [u8; 16], owner: T::AccountId},
+    Created {kitty: Dna, owner: T::AccountId},
     /// A kitty was successfully transferred.
-    Transferred {from: T::AccountId, to: T::AccountId, kitty: [u8; 16]},
+    Transferred {from: T::AccountId, to: T::AccountId, kitty: Dna},
+		/// The price of a kitty was successfully set.
+		PriceSet {kitty: Dna, price: Option<BalanceOf<T>>}
 	}
 
 	#[pallet::error]
@@ -107,11 +109,24 @@ pub mod pallet {
 		pub fn transfer(
 			origin: OriginFor<T>,
 			to: T::AccountId,
-			kitty_id: [u8; 16]
+			kitty_id: Dna
 		) -> DispatchResult {
 			let from = ensure_signed(origin)?;
 		
 			Self::exec_transfer(kitty_id, from, to)?;
+
+			Ok(())
+		}
+
+		#[pallet::weight(0)]
+		pub fn set_price(
+			origin: OriginFor<T>,
+			kitty_id: Dna,
+			price: Option<BalanceOf<T>>
+		) -> DispatchResult {
+			let from = ensure_signed(origin)?;
+		
+			Self::exec_set_price(kitty_id, from, price)?;
 
 			Ok(())
 		}
