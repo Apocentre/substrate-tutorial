@@ -1,14 +1,16 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub mod types;
+
 pub use pallet::*;
+pub use types::*;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::{pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 	use frame_support::traits::{Currency, Randomness};
-
-
+	
 	// The struct on which we build the pallet logic
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
