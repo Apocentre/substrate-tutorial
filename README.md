@@ -1,1 +1,1 @@
-# substrate-tutorial
+# Kitties
