@@ -264,6 +264,9 @@ impl pallet_sudo::Config for Runtime {
 /// Configure the pallet-kitties in pallets/kitties.
 impl pallet_kitties::Config for Runtime {
 	type Event = Event;
+	type Currency = Balances;
+	type PersonalCap = ConstU32<100>;
+	type Randomness = RandomnessCollectiveFlip;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
