@@ -79,7 +79,19 @@ pub mod pallet {
 
 	// Your Pallet's callable functions.
 	#[pallet::call]
-	impl<T: Config> Pallet<T> {}
+	impl<T: Config> Pallet<T> {
+		/// Create a new unique kitty.
+		#[pallet::weight(0)]
+		pub fn create_kitty(origin: OriginFor<T>) -> DispatchResult {
+			// Make sure the caller is from a signed origin
+			let sender = ensure_signed(origin)?;
+
+			let (kitty_dna, gender) = Self::gen_dna();
+			Self::mint(&sender, kitty_dna, gender)?;
+
+			Ok(())
+		}
+	}
 
 	// Your Pallet's internal functions.
 	impl<T: Config> Pallet<T> {}
