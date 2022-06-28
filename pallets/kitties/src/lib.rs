@@ -71,7 +71,9 @@ pub mod pallet {
     /// A kitty was successfully transferred.
     Transferred {from: T::AccountId, to: T::AccountId, kitty: Dna},
 		/// The price of a kitty was successfully set.
-		PriceSet {kitty: Dna, price: Option<BalanceOf<T>>}
+		PriceSet {kitty: Dna, price: Option<BalanceOf<T>>},
+		/// A kitty was successfully sold.
+		Sold {seller: T::AccountId, buyer: T::AccountId, kitty: Dna, price: BalanceOf<T>},
 	}
 
 	#[pallet::error]
@@ -88,6 +90,10 @@ pub mod pallet {
     NotOwner,
     /// Trying to transfer or buy a kitty from oneself.
     TransferToSelf,
+    /// Ensures that the buying price is greater than the asking price.
+    BidPriceTooLow,
+    /// This kitty is not for sale.
+    NotForSale,
 	}
 
 	// Your Pallet's callable functions.
@@ -127,6 +133,20 @@ pub mod pallet {
 			let from = ensure_signed(origin)?;
 		
 			Self::exec_set_price(kitty_id, from, price)?;
+
+			Ok(())
+		}
+
+		#[pallet::weight(0)]
+		pub fn buy(
+			origin: OriginFor<T>,
+			to: T::AccountId,
+			kitty_id: Dna,
+			bid_price: BalanceOf<T>,
+		) -> DispatchResult {
+			let from = ensure_signed(origin)?;
+		
+			Self::exec_buy(kitty_id, from, to, bid_price)?;
 
 			Ok(())
 		}

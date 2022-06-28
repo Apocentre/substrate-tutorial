@@ -5,19 +5,13 @@ use crate::{
 use frame_support::pallet_prelude::*;
 
 impl<T: Config> Pallet<T> {
-  pub fn exec_transfer(
+  pub fn update_kitties_owned(
     kitty_id: Dna,
-    origin: T::AccountId,
-    to: T::AccountId,
-  ) -> DispatchResult {
-    let mut kitty = Kitties::<T>::get(&kitty_id).ok_or(Error::<T>::NoKitty)?;
-    let from = kitty.owner;
-    
-    ensure!(origin == from, Error::<T>::NotOwner);
-    ensure!(from != to, Error::<T>::TransferToSelf);
-
+    from: &T::AccountId,
+    to: &T::AccountId,
+  ) -> Result<(BoundedVec<Dna, T::PersonalCap>, BoundedVec<Dna, T::PersonalCap>), DispatchError> {
     let mut from_owned = KittiesOwned::<T>::get(&from);
-    
+
     // Remove kitty from list of owned kitties.
     if let Some(ind) = from_owned.iter().position(|&id| id == kitty_id) {
       from_owned.swap_remove(ind);
@@ -28,6 +22,22 @@ impl<T: Config> Pallet<T> {
     // Add kitty to the list of owned kitties.
     let mut to_owned = KittiesOwned::<T>::get(&to);
     to_owned.try_push(kitty_id).map_err(|()| Error::<T>::TooManyOwned)?;
+
+    Ok((from_owned, to_owned))
+}
+
+  pub fn exec_transfer(
+    kitty_id: Dna,
+    origin: T::AccountId,
+    to: T::AccountId,
+  ) -> DispatchResult {
+    let mut kitty = Kitties::<T>::get(&kitty_id).ok_or(Error::<T>::NoKitty)?;
+    let from = kitty.owner;
+    
+    ensure!(origin == from, Error::<T>::NotOwner);
+    ensure!(from != to, Error::<T>::TransferToSelf);
+    
+    let (from_owned, to_owned) = Self::update_kitties_owned(kitty_id, &from, &to)?;
 
     // Transfer succeeded, update the kitty owner and reset the price to `None`.
     kitty.owner = to.clone();
