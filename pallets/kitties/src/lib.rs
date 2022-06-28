@@ -3,14 +3,37 @@
 pub mod types;
 
 pub use pallet::*;
-pub use types::*;
+use crate::types::kitty::*;
 
 #[frame_support::pallet]
 pub mod pallet {
+	use super::*;
 	use frame_support::{pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 	use frame_support::traits::{Currency, Randomness};
 	
+	type BalanceOf<T> = <<T as crate::pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	
+	/// The state of our Runtime
+	
+	/// The total supply of NFTs
+	#[pallet::storage]
+	pub(super) type TotalSupply<T: Config> = StorageValue<_, u64, ValueQuery>;
+
+	/// Maps the kitty struct to the kitty DNA.
+	#[pallet::storage]
+	pub(super) type Kitties<T: Config> = StorageMap<_, Twox64Concat, [u8; 16], Kitty<T::AccountId, BalanceOf<T>>>;
+
+	/// Track the kitties owned by each account.
+	#[pallet::storage]
+	pub(super) type KittiesOwned<T: Config> = StorageMap<
+		_,
+		Twox64Concat,
+		T::AccountId,
+		BoundedVec<[u8; 16], T::PersonalCap>,
+		ValueQuery,
+	>;
+
 	// The struct on which we build the pallet logic
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);

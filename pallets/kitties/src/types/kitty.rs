@@ -1,8 +1,4 @@
-
 use frame_support::{pallet_prelude::*};
-use frame_support::traits::{Currency};
-
-type BalanceOf<T> = <<T as crate::pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 #[derive(Clone, Encode, Decode, PartialEq, Copy, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub enum Gender {
@@ -12,10 +8,10 @@ pub enum Gender {
 
 // Struct for holding kitty information
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen, Copy)]
-#[scale_info(skip_type_params(T))]
-pub struct Kitty<T: crate::pallet::Config> {
+/// https://substrate.stackexchange.com/questions/619/how-to-fix-parity-scale-codecmaxencodedlen-is-not-implemented-for-t?noredirect=1
+pub struct Kitty<Account, Balance> {
   pub dna: [u8; 16],
-  pub price: Option<BalanceOf<T>>,
+  pub price: Option<Balance>,
   pub gender: Gender,
-  pub owner: T::AccountId,
+  pub owner: Account,
 }
