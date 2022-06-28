@@ -6,8 +6,11 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod reward;
+mod aura_account_adapter;
 
+use crate::{
+	aura_account_adapter::*,
+};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -31,6 +34,7 @@ pub use frame_support::{
 	ConsensusEngineId,
 	traits::{
 		ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo, FindAuthor,
+		Imbalance, OnUnbalanced, Currency
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -46,8 +50,8 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
-/// Import the kitties pallet.
 pub use pallet_kitties;
+pub use pallet_author_reward;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -252,7 +256,7 @@ impl pallet_balances::Config for Runtime {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-	type OnChargeTransaction = CurrencyAdapter<Balances, crate::reward::DealWithFees>;
+	type OnChargeTransaction = CurrencyAdapter<Balances, AuthorReward>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
 	type LengthToFee = IdentityFee<Balance>;
@@ -263,20 +267,6 @@ impl pallet_sudo::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
 }
-
-pub struct AuraAccountAdapter;
-
-impl FindAuthor<AccountId> for AuraAccountAdapter {
-	fn find_author<'a, I>(digests: I) -> Option<AccountId>
-	where I: 'a + IntoIterator<Item=(ConsensusEngineId, &'a [u8])>
-	{
-		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests).and_then(|k| {
-			AccountId::try_from(k.as_ref()).ok()
-		})
-	}
-}
-
-
 
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = AuraAccountAdapter;
@@ -291,6 +281,14 @@ impl pallet_kitties::Config for Runtime {
 	type Currency = Balances;
 	type PersonalCap = ConstU32<100>;
 	type Randomness = RandomnessCollectiveFlip;
+}
+
+impl pallet_author_reward::Config for Runtime {
+	type Authorship = AuraAccountAdapter;
+	type Balances = Balances;
+	// Start with 10 NATIVE tokens per block
+	// We use 6 decimals
+	type InitialBlockReward = ConstU128<10_000_000>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -309,8 +307,9 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		Authorship: pallet_authorship,
-		// Include the custom logic from the pallet-kitties in the runtime.
-		KittiesModule: pallet_kitties,
+		// Include our custom pallets
+		Kitties: pallet_kitties,
+		AuthorReward: pallet_author_reward,
 	}
 );
 
@@ -355,7 +354,8 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_kitties, KittiesModule]
+		[pallet_kitties, Kitties]
+		[pallet_author_reward, AuthorReward]
 	);
 }
 

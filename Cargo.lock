@@ -3767,6 +3767,7 @@ dependencies = [
  "frame-try-runtime",
  "hex-literal",
  "pallet-aura",
+ "pallet-author-reward",
  "pallet-authorship",
  "pallet-balances",
  "pallet-grandpa",
@@ -3970,6 +3971,20 @@ dependencies = [
  "sp-consensus-aura",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-author-reward"
+version = "0.0.1"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
 ]
 
 [[package]]
